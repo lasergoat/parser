@@ -1,0 +1,46 @@
+there is G, our input will be G' (I added lambda to the terminal Σ).
+
+1.	Consider the following grammar, G = (N, S, P, S), where 
+N = {S, L, D, X, P, R },  Σ = { n, t, nt, a, sc, |,  =>, rnum,  $, s, lambda } and 
+P = {	1: S => L $ ;
+ 		2: L => L D  sc;
+ 		3: L => D  sc;
+ 		4: D => n ;
+ 		5: D => X ;
+ 		6: X => t a ;
+ 		7: X => nt a;
+ 		8: X => X a ;
+ 		9: D => s ;
+ 		10: D => P ;
+ 		11: P => P | R;
+  		12: P => rnum a  => R;
+ 		13: R => R a;
+  		14: R => lambda;
+}
+
+This grammar generates a language, L(G), that is a specification language for Context-free grammars!  That is, if x ∈ L(G), then x is a specification for a Context-free grammar (any and all CFGs).  An example of such an “x” is given below.  
+
+To understand the semantics of the grammar, G, we introduce the following conventions:
+(a) “sc” denotes a semi-colon “;”.
+(b) All specifications must end with a “$”.
+(c) The nonterminal D derives each statement in a specification, a statement can be any one of the following:  “n” (a grammar name declaration), “nt” (a declaration of the nonterminal alphabet), “t” (a declaration of the terminal alphabet), “s” (a declaration of the start symbol), “P” ( a production or re-writing rule), “rnum” ( a rule number, e.g. “12: “ ).
+(d) The letter “a” denotes any symbol of the vocabulary.
+(e) The vertical bar “|” is used as a delimiter to separate all possible rightparts for a given leftpart of a rule.
+
+# Comments begin with pound sign 
+# Grammar must have name, non-terminal, terminal alphabet, start symbol
+# and a least one rule where the leftpart is the start symbol.
+# Every line, except with comments and the $ must end with a semicolon
+# Note: bos and eof are reserved symbols 
+!name:  Sample;
+!start: S; 
+!non-terminals: S X Y Z;
+!terminals: a b;
+# rules are in one of the three following forms
+# there is only one rule per line
+1: S => X|Y|Z;
+2: X => b;
+3: X => a;
+4: Z =>; # lambda rule
+# The dollar sign signals the end of the grammar
+$
