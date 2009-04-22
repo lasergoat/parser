@@ -1,0 +1,128 @@
+                                                                     
+                                                                     
+                                                                     
+                                             
+
+FLOW
+----
+
+scans input
+
+produces token list (token objects)
+produces symbol table
+
+parses token list
+
+
+TOKEN OBJECT
+------------
+symbol (int)
+isReserved
+
+
+SYMBOL TABLE ENTRY (SET)
+------------------------
+token
+symbol table id
+firstEtry (list)
+
+addString (appends to end of list)
+removeString (removes given string)
+
+
+SYMBOL TABLE (list)
+---------------------
+addSymbol
+getSymbol (given id -> set)
+getId (given a set -> id)
+
+
+-set of productions
+-set of nonterminals/terminals
+
+
+1. Check for erasing rules
+	-for (right side of rule ∈ vocab*)
+		if(symbol == lambda) reject;
+		
+		
+2. Check for cycles
+    foreach(rule in rules)
+		if(rule.left == rule.right) reject;
+		
+		
+3. Check for unique invertibility
+	foreach(rule1 in rules)
+		foreach(rule2 in rules)
+		  if (rule1.right == rule2.right) reject;
+		  
+		  
+4. WWP relations ( ≈ ∪ < ) ∩ >  = Φ
+		  i) Compute Left/Right sets
+			   foreach(nonterminal in N)
+			   {
+			      foreach(rule in nonterminal.rules)
+				  {
+			        Left[nonterminal] += rule.right.firstSymbol
+					Right[nonterminal] += rule.right.lastSymbol
+				   
+				    Left[nonterminal] union with Left[rule.right.firstSymbol]
+					Right[nonterminal] union with Right[rule.right.lastSymbol]
+				  }
+			   }
+			   
+			   
+			   
+			ii) Compute Parsing table
+			    Find equal ones
+				    foreach(rule.right in rules)
+					{
+					    for(i = 0; i < rule.length - 1; i++)
+						{
+						   if (rule.right[i] != null && rule.right[i+1] != null)
+						   {
+						       table[rule.right[i]][rule.right[i+1]] += RELATION_EQUALS
+							   foreach(e in headPlus(rule.right[i+1]))
+							   {
+							       table[rule.right[i]][e] += RELATiON_LESS
+							   }
+							   foreach(e in tailPlus(rule.right[i]))
+							   {
+							       foreach(f in headStar(rule.right[i+1]))
+								   {
+								       table[e][f] += RELATiON_GTR
+									}
+								}   
+							}
+						}
+					}
+					
+					headPlus(Vocab element)
+					{
+					    if(element is Terminal)
+						  return empty;
+						  
+						else
+						   return Left[element];
+						  
+					}
+					
+					headStar(Vocab element)
+					{
+					      return removeNonterminals(headPlus(element) UNion {element}) 
+					}
+					tailPlus(Vocab element)
+					{
+						if(element is Terminal)
+						  return empty;
+						  
+						else
+						   return Right[element];
+
+					}
+				
+					
+			iii) Check RELATiON
+				  
+				
+						
