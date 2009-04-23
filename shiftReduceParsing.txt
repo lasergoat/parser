@@ -1,0 +1,44 @@
+ Take the language:
+ Sentence   --> NounPhrase VerbPhrase
+ NounPhrase --> Art Noun
+ VerbPhrase --> Verb | Adverb Verb
+ Art        --> the | a | ...
+ Verb       --> jumps | sings | ...
+ Noun       --> dog | cat | ...
+
+ And the input:
+ the dog jumps
+
+ Then the bottom up parsing is:
+Stack                  Input Sequence
+()                     (the dog jumps)
+(the)                  (dog jumps)      SHIFT word onto stack
+(Art)                  (dog jumps)      REDUCE using grammar rule
+(Art dog)              (jumps)          SHIFT..
+(Art Noun)             (jumps)          REDUCE..
+(NounPhrase)           (jumps)          REDUCE
+(NounPhrase jumps)     ()               SHIFT
+(NounPhrase Verb)      ()               REDUCE
+(NounPhrase VerbPhrase)()               REDUCE
+(Sentence)             ()               SUCCESS
+
+Given the language:
+<Expression> --> <Term> | <Term> + <Expression>
+<Term>       --> <Factor> | <Factor> * <Term>
+<Factor>     --> [ <Expression> ] | 0...9
+
+()                       (2 * [ 1 + 3 ])  SHIFT
+(2)                      (* [ 1 + 3 ])    REDUCE
+(<Factor>)               (* [ 1 + 3])     SHIFT
+(<Factor> *)             ([ 1 + 3])       SHIFT
+(<Factor> * [)           (1 + 3])         SHIFT
+(<Factor> * [ 1)         (+ 3])           REDUCE (twice)
+(<Factor> * [ <Term>)     (+ 3 ])         SHIFT (twice)
+(<Factor> * [ <Term> + 3) ( ])            REDUCE (thrice)
+(<Factor> * [ <Term> + <Expression>) ( ]) REDUCE
+(<Factor> * [ <Expression>) ( ])          SHIFT
+(<Factor> * [ <Expression> ]) ()          REDUCE
+(<Factor> * <Factor>)     ()              REDUCE
+(<Factor> * <Term>)       ()              REDUCE
+(<Term>)                  ()              REDUCE
+(<Expression>)            ()              SUCCESS
