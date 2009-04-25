@@ -1,0 +1,11 @@
+ffffffffffffffffffffffffffffffff e865035a19f7bb1bb03a803409a151e8 ffffffffffffffffffffffffffffffff 0 /Users/localcosadmin/Desktop/parser/parser/build/parser.build/Debug/parser.build/Objects-normal/i386/ParserApp.o
+ffffffffffffffffffffffffffffffff d3868c638e44165c182d74849e3d76fb ffffffffffffffffffffffffffffffff 50616 /Users/localcosadmin/Desktop/parser/parser/build/Debug/parser
+00000000000002d2000000000000000e 7e368d70736868245f5508c658d00932 ffffffffffffffffffffffffffffffff 33448 /Users/localcosadmin/Desktop/parser/parser/build/parser.build/Debug/parser.build/Objects-normal/i386/AppError.o
+0000000049f3271d0000000000001f9c c95df84a9019f3bfdfd97834161cee8b ffffffffffffffffffffffffffffffff 89868 /Users/localcosadmin/Desktop/parser/parser/build/parser.build/Debug/parser.build/Objects-normal/i386/IOMgmt.o
+0000000049f33b4c0000000000000271 16d47b19cec1e84cf26885a9b910093e ffffffffffffffffffffffffffffffff 0 /Users/localcosadmin/Desktop/parser/parser/build/parser.build/Debug/parser.build/Objects-normal/i386/Main-CB13BA6B.o
+0000000049ee5f940000000000000000 1fad20b052e2892ee80d8d7b7d998b22 ffffffffffffffffffffffffffffffff 1084 /Users/localcosadmin/Desktop/parser/parser/build/parser.build/Debug/parser.build/Objects-normal/i386/Table.o
+0000000049ee5f660000000000000000 8cbd15143f1a4e01cb6325b7266fe128 ffffffffffffffffffffffffffffffff 1084 /Users/localcosadmin/Desktop/parser/parser/build/parser.build/Debug/parser.build/Objects-normal/i386/Token.o
+0000000049ee5f780000000000000000 4922caa6e158332916ee026d67f8209b ffffffffffffffffffffffffffffffff 1084 /Users/localcosadmin/Desktop/parser/parser/build/parser.build/Debug/parser.build/Objects-normal/i386/Rule.o
+0000000049ee5fc10000000000000000 ba1445bd1beda3428fcfd0ec08d1f68e ffffffffffffffffffffffffffffffff 1084 /Users/localcosadmin/Desktop/parser/parser/build/parser.build/Debug/parser.build/Objects-normal/i386/SemanticInfo.o
+0000000049ee5fa30000000000000000 5f6787e79292d70392411924d08567d6 ffffffffffffffffffffffffffffffff 1084 /Users/localcosadmin/Desktop/parser/parser/build/parser.build/Debug/parser.build/Objects-normal/i386/Parser.o
+0000000049f31b62000000000000008f 45a6c22f237ee3a837bb75d6b6732b67 ffffffffffffffffffffffffffffffff 16808 /Users/localcosadmin/Desktop/parser/parser/build/parser.build/Debug/parser.build/Objects-normal/i386/main-56F5258C.o
