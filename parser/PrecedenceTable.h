@@ -1,5 +1,5 @@
 /*
- *  ParserApp.h
+ *  PrecedenceTable.h
  *  parser
  *
  *  Created by danek on 4/25/09.
