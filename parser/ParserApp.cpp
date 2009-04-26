@@ -13,36 +13,43 @@
 #include <string>
 #include "PrecedenceTable.h"
 
-using namespace std;
-
 int main()
 {
-	FILE* file = fopen("input.g", "r");
+	std::ifstream input("../../input.g", std::ifstream::in);
 	
-	std::string token;
+	char tk, temp, ignore;
 	
-	token = getNextToken(file);
+	PrecedenceTable *table = new PrecedenceTable();
 	
-	while(token != "$")
+	while( input.good() )
 	{
-		//State1: token is a comment
-		if(token == "#")
+		tk = (char) input.get();
+		
+		// State 1: token is a comment
+		if(tk == '#')
 		{
-			fscanf(file, "\n");
-			getNextToken(file);
-			continue;
+			// ignore comment lines
+			do
+			{
+				ignore = (char) input.get();
+			}
+			// get to the next new line
+			while( ignore != '\n');
 		}
 		
-		else if(
+		else if( tk == '!')
+		{
+			do
+			{
+				temp = (char) input.get();
+			}
+			while( temp != ':');
+		}
+		
 	}
-				
+	
+	input.close();
 	
 	return 0;
 }
 
-string getNextToken(FILE* fin)
-{
-	string tkn;
-	fscanf(fin, "%s ", tkn);
-	return tkn;
-}

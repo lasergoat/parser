@@ -3,7 +3,21 @@
  *  parser
  *
  *  Created by danek on 4/25/09.
- *  Copyright 2009 University of Central Florida. All rights reserved.
  *
  */
+
+#ifndef _PrecedenceTable
+#define _PrecedenceTable
+
+#include "ParsingGrammar.h"
+#include "DataTable.h"
+using namespace ParsingGrammar;
+
+class PrecedenceTable: public DataTable
+{
+	public:
+		PrecedenceTable();
+};
+
+#endif
 
