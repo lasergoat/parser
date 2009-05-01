@@ -31,7 +31,7 @@ namespace ParsingGrammar
 	 */
 	enum parserVocab
 		{
-			Start,			// S
+			Start = 20,		// S
 			Line,			// L
 			Deriv,			// D
 			Double,			// X
@@ -47,6 +47,7 @@ namespace ParsingGrammar
 			rulenumber,		// rnum
 			startdec,		// s (start symbol declaration)
 			lambda,			// lambda
-			end				// $ (end of input)
+			end,				// $ (end of input)
+			error = -1
 		};
 };
