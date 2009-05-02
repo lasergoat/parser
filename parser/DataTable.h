@@ -22,7 +22,6 @@ class DataTable
 		int *matrix;
 		int width;
 		int height;
-		
 };
 
 #endif

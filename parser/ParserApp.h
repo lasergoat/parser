@@ -7,30 +7,43 @@
  *
  */
 
-#ifndef PARSER_APP_H
-#define PARSER_APP_H
+#ifndef _PARSER_APP
+#define _PARSER_APP
 
-#include "ParsingGrammar.h"
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <cstdlib>
+#include <stack>
+#include <set>
+#include <list>
+
 #include "PrecedenceTable.h"
 
-typedef struct 
-	{
-		int token_type; //0 -19: Relation, 20+:Vocab Symbol
-		std::string token_value;             
-	} Symbol;
+using namespace ParsingGrammar;
 
-public class ParserApp
-	{
-		
-		
+class ParserApp
+{
 	public:
 		
-		
+		ParserApp( const char * filename);
+		bool parse();
+		bool lexer();
 		
 	private:
-		vocab_t currentSymbol;
-		Symbol stack[10000];
 		
-		bool isRelation(Symbol s) { return s.token_type < 20; }
-	}
-#endif //PARSER_GRAMMAR_H
+		class Symbol 
+		{
+			public:
+				int token_type; // 0 -19: Relation, 20+:Vocab Symbol
+				std::string token_value;             
+		};
+		
+		std::ifstream input;
+		std::stack<ParserApp::Symbol*> semanticStack;
+		PrecedenceTable* table;
+		Symbol* currentSymbol;
+		ParsingGrammar::vocab_t getSymbolTypeFromInputString(std::string str);
+};
+
+#endif
