@@ -8,6 +8,16 @@
  */
 
 #include "ParserApp.h"
+#define DEBUG_TRACING true
+
+/*
+ * Symbol Class Intake Constructor
+ *
+ * takes in type, value
+ */
+ParserApp::Symbol::Symbol(int tt, std::string tv) :
+	token_type(tt),
+	token_value(tv) {}
 
 
 /*
@@ -29,13 +39,11 @@ ParserApp::ParserApp( const char * filename )
 	input.open(filename, std::ifstream::in);
 	
 	// Push the intial endsym ($) into stack
-	Symbol* endsym = new Symbol();
-	endsym->token_type = ParsingGrammar::end;
-	endsym->token_value = std::string("$");
+	Symbol* endsym = new Symbol( ParsingGrammar::end, std::string("$") );
 	semanticStack.push(endsym);        
 	
 	// start the current symbol as the initial endsym ($)
-	currentSymbol = endsym;                  
+	currentSymbol = endsym;
 }
 
 
@@ -52,86 +60,76 @@ ParsingGrammar::vocab_t ParserApp::getSymbolTypeFromInputString(std::string str)
 {
 	// make string into character array
 	const char * symbolName = str.c_str();
-	char temp[ (int) str.length() ];
+	
+	// return type, if not overwritten, wil be error
+	ParsingGrammar::vocab_t type = error;
 	
 	// State 1: A declaration
 	if(symbolName[0] == '!')
-	{ 
-		int i = 1;
-		while(symbolName[i] != ':' || symbolName[i] != 0)
+	{
+		// copy the symbol name declaration into temp with out the '!'
+		char temp[ (int) str.length() - 1 ];
+		strcpy(temp, &symbolName[1]);
+
+		if( strcmp("name:", temp) == 0)
 		{
-			temp[i] = symbolName[i];
-			i++;
+			type = name;
 		}
-		
-		if(!strcmp("name:", temp))
+		else if( strcmp("non-terminals:", temp) == 0 )
 		{
-			return name;
+			type = nonterminal;
 		}
-		else if(!strcmp("non-terminals:", temp))
+		else if( strcmp("terminals:", temp) == 0 )
 		{
-			return nonterminal;
+			type = terminal;
 		}
-		else if(!strcmp("terminals:", temp))
+		else if( strcmp("start:", temp) == 0 )
 		{
-			return terminal;
-		}
-		else if(!strcmp("start:", temp))
-		{
-			return startdec;
-		}
-		else
-		{
-			return error;
+			type = startdec;
 		}
 	}
 	
 	// State 2: a number
-	else if(isnumber(symbolName[0]))
+	else if( isnumber(symbolName[0]) )
 	{
 		if(symbolName[1] == ':')
 		{
-			return rulenumber;
+			type = rulenumber;
 		}
-		else return error;
 	}
 	
 	// State 3: a symbol or lambda
-	else if(isalpha(symbolName[0]))
+	else if( isalpha(symbolName[0]) )
 	{
-		if(!strcmp("lambda;", symbolName))
+		if( strcmp("lambda", symbolName) == 0 )
 		{
-			return lambda;
+			type = lambda;
 		}
 		else
 		{
 			// Assume that any other input that
 			// is alphanumeric is a vocab symbol
-			return vocabsymbol;
+			type = vocabsymbol;
 		}
 	}
 	
 	// Other states, misc symbols
-	else if(!strcmp("=>", temp))
+	else if( str == "=>" )
 	{
-		return becomes;
+		type = becomes;
 	}
 	
-	else if(!strcmp(";", temp))
+	else if( str == ";" )
 	{
-		return semicolon;
+		type = semicolon;
 	}
 	
-	else if(!strcmp("|", temp))
+	else if( str == "|" )
 	{
-		return choice;
+		type = choice;
 	}
 	
-	// Error State, char was invalid
-	else 
-	{
-		return error;
-	}
+	return type;
 }
 
 
@@ -152,6 +150,7 @@ bool ParserApp::lexer()
 	
 	while( input.good() )
 	{
+		// look ahead one character to see if it's a comment
 		tk = (char) input.get();
 		
 		// State 1: token is a comment
@@ -159,60 +158,73 @@ bool ParserApp::lexer()
 		{
 			// ignore entire line
 			getline(input, tempString);
+			
+			if(DEBUG_TRACING) std::cout << "found comment: " << tempString << "\n";
 			continue;
 		}
 		
-		// Token is not a comment
+		// if we get to here, we did not 'continue'
+		// so it must not have been a comment marker '#'
+		// so put the char back
+		input.unget();
+		
+		// Token is not a comment (we know because we looked ahead)
 		// perform stack actions (shifting and reducing)
-		else 
+		input >> tempString;
+		if(DEBUG_TRACING) std::cout << "getting next token: " << tempString << "\n";
+		
+		// special case for name Declaration
+		if(tempString == "!name:")
 		{
-			// special case for name Declaration
 			input >> tempString;
-			if(tempString == "!name:")
-			{
-				currentSymbol = new Symbol();
-				currentSymbol->token_type = name;
-				input >> tempString;
-				currentSymbol->token_value = tempString;
-			}
-			else
-			{
-				currentSymbol = new Symbol();
-				currentSymbol->token_type = getSymbolTypeFromInputString(tempString);
-				currentSymbol->token_value = tempString;
-			}
+			currentSymbol = new Symbol( name, tempString);
+			if(DEBUG_TRACING) std::cout << "found name declaration, ignoring: " << tempString << "\n";
 			
-			parserRelation rel = (parserRelation) table->get(semanticStack.top()->token_type, currentSymbol->token_type);
+			// need to put currentSymbol into symbol table or something..
 			
-			// if the relationship is Equal or Less
-			// shift operation
-			if(rel == LEQ || rel == EQL || rel == LES)
-			{
-				Symbol* relation = new Symbol();
-				relation->token_type = rel;
-				relation->token_value = "";
-				
-				semanticStack.push(relation);
-				semanticStack.push(currentSymbol);
-			}
-			
-			// Relation is Greater
-			// reduce operation
-			else if(rel == GTR)
-			{
-				// basic idea:
-				// Symbol * production = searchProductionToReduce();
-				// removePivot();
-				// parserRelation tempRel = (parserRelation) table->get(semanticStack.top()->token_type, production->token_type);
-				// stack.push(tempRel);
-				// stack.push(production);
-			}
-			
-			// always perform a reduction operation
-			// Symbol * productionToReduce = searchProductionToReduce();
-			// Pivot = next LES relation from top of stack
-			// find the production which has the same right side as the Pivot
+			continue;
 		}
+		else
+		{
+			currentSymbol = new Symbol();
+			currentSymbol->token_type = getSymbolTypeFromInputString(tempString);
+			currentSymbol->token_value = tempString;
+
+			if(DEBUG_TRACING) std::cout << "found normal statement, type: " << currentSymbol->token_type;
+			if(DEBUG_TRACING) std::cout << " value: " << tempString << "\n";
+		}
+		
+		parserRelation rel = (parserRelation) table->get(semanticStack.top()->token_type, currentSymbol->token_type);
+		if(DEBUG_TRACING) std::cout << "found relation between current and top (rel): " << rel << "\n";
+		
+		// if the relationship is Equal or Less
+		// shift operation
+		if(rel == LEQ || rel == EQL || rel == LES)
+		{
+			if(DEBUG_TRACING) std::cout << "relation (rel) was less or equal shifting \n";
+			Symbol* relation = new Symbol(rel, "");
+			
+			semanticStack.push(relation);
+			semanticStack.push(currentSymbol);
+		}
+		
+		// Relation is Greater
+		// reduce operation
+		else if(rel == GTR)
+		{
+			if(DEBUG_TRACING) std::cout << "relation (rel) was greater, reducing \n";
+			// basic idea:
+			// Symbol * production = searchProductionToReduce();
+			// removePivot();
+			// parserRelation tempRel = (parserRelation) table->get(semanticStack.top()->token_type, production->token_type);
+			// stack.push(tempRel);
+			// stack.push(production);
+		}
+		
+		// always perform a reduction operation
+		// Symbol * productionToReduce = searchProductionToReduce();
+		// Pivot = next LES relation from top of stack
+		// find the production which has the same right side as the Pivot
 	} // end while loop
 	
 	return true;
@@ -232,7 +244,7 @@ bool ParserApp::lexer()
 int main()
 {
 	ParserApp * App = new ParserApp("../../input.g");
-
+	
 	// scan the input file
 	// perform parsing actions on the semantic stack
 	if(App->lexer())

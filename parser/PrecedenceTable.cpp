@@ -6,7 +6,16 @@
 
 #include "PrecedenceTable.h"
 
-PrecedenceTable::PrecedenceTable() : DataTable(17, 17)
+/*
+ * PRECEDENCE_TABLE CONSTRUCTOR
+ *
+ * return PrecedenceTable <pointer>
+ * with all relations already set
+ *
+ * make a data table large enough to hold all symbols up to end
+ * client methods are ->set() and ->get()
+ */
+PrecedenceTable::PrecedenceTable() : DataTable(end, end)
 {
 	// S Production
 	set(Start, Start,              0	);

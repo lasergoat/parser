@@ -3,7 +3,6 @@
  *  parser
  *
  *  Created by danek on 4/30/09.
- *  Copyright 2009 University of Central Florida. All rights reserved.
  *
  */
 
@@ -35,8 +34,13 @@ class ParserApp
 		class Symbol 
 		{
 			public:
-				int token_type; // 0 -19: Relation, 20+:Vocab Symbol
-				std::string token_value;             
+				Symbol() {};
+				Symbol(int tt, std::string tv);
+				
+				//  0 - 19 : Relation
+				// 20 - 36 : Vocab Symbol
+				int token_type;
+				std::string token_value;
 		};
 		
 		std::ifstream input;
