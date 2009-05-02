@@ -44,6 +44,28 @@ ParserApp::ParserApp( const char * filename )
 	
 	// start the current symbol as the initial endsym ($)
 	currentSymbol = endsym;
+
+	//Set up the static prodctions table
+	productions[Start].push_back("L "); //1
+	
+	productions[Line].push_back("L D sc ");//2
+	productions[Line].push_back("D sc ");//2
+	productions[Deriv].push_back("n ");//3
+	productions[Deriv].push_back("X ");//4
+	
+	productions[NTList].push_back("t a ");//5
+	productions[NTList].push_back("nt a ");//6
+	productions[NTList].push_back("X a ");//7
+	
+	productions[Deriv].push_back("s ");//8
+	productions[Deriv].push_back("P ");//9
+
+	productions[Production].push_back("P | R ");//10
+	productions[Production].push_back("rnum a => R ");
+	
+	productions[Rule].push_back("R a ");
+    productions[Rule].push_back("lambda ");
+	
 }
 
 
@@ -171,6 +193,15 @@ bool ParserApp::lexer()
 		// Token is not a comment (we know because we looked ahead)
 		// perform stack actions (shifting and reducing)
 		input >> tempString;
+		
+		//if a semicolon is included in the string we just read in, we need to
+		//remove it from the string and put it back into the input buffer.
+		if(tempString.length() > 1 && tempString[tempString.length() - 1] == ';')
+		{
+			input.unget();
+			tempString[tempString.length() -1] = NULL;
+		}
+		
 		if(DEBUG_TRACING) std::cout << "getting next token: " << tempString << "\n";
 		
 		// special case for name Declaration
@@ -178,17 +209,21 @@ bool ParserApp::lexer()
 		{
 			input >> tempString;
 			currentSymbol = new Symbol( name, tempString);
+			currentSymbol->token_type = name;
+			currentSymbol->token_value = tempString;
+			currentSymbol->type_value = vocabSymbolAsString(name);
+			
 			if(DEBUG_TRACING) std::cout << "found name declaration, ignoring: " << tempString << "\n";
 			
 			// need to put currentSymbol into symbol table or something..
 			
-			continue;
 		}
 		else
 		{
 			currentSymbol = new Symbol();
 			currentSymbol->token_type = getSymbolTypeFromInputString(tempString);
 			currentSymbol->token_value = tempString;
+			currentSymbol->type_value = "n";
 
 			if(DEBUG_TRACING) std::cout << "found normal statement, type: " << currentSymbol->token_type;
 			if(DEBUG_TRACING) std::cout << " value: " << tempString << "\n";
@@ -214,22 +249,154 @@ bool ParserApp::lexer()
 		{
 			if(DEBUG_TRACING) std::cout << "relation (rel) was greater, reducing \n";
 			// basic idea:
-			// Symbol * production = searchProductionToReduce();
-			// removePivot();
-			// parserRelation tempRel = (parserRelation) table->get(semanticStack.top()->token_type, production->token_type);
-			// stack.push(tempRel);
-			// stack.push(production);
+			 vocab_t nt = searchProductionToReduce();
+			//we've already implicitly removed the pivot
+			 parserRelation tempRel = (parserRelation) table->get(semanticStack.top()->token_type, nt);
+			 Symbol* relSym = new Symbol(tempRel, "");
+			
+			 //semanticAction(nt);
+			semanticStack.push(relSym);
+			
+			Symbol* tSym = new Symbol(nt, vocabSymbolAsString(nt));
+			 semanticStack.push(tSym);
 		}
 		
-		// always perform a reduction operation
-		// Symbol * productionToReduce = searchProductionToReduce();
-		// Pivot = next LES relation from top of stack
-		// find the production which has the same right side as the Pivot
 	} // end while loop
 	
 	return true;
 }
 
+std::string vocabSymbolAsString(vocab_t type)
+{
+	switch (type) {
+			
+		case Start::
+			return "S";
+			break;
+			
+		case Line:
+			return "L";
+			break;
+			
+		case Deriv:
+			return "D";
+			break;
+			
+		case NTList:
+			return "X";
+			break;
+			
+		case Production:
+			return "P";
+			break;
+			
+		case Rule:
+			return "R";
+			break;
+			
+		case name:
+			return "n";
+			break;
+			
+		case terminal:
+			return "t";
+			break;
+			
+		case nonterminal:
+			return "nt";
+			break;
+			
+		case vocabsymbol:
+			return "a";
+			break;
+			
+		case semicolon:
+			return "sc";
+			break;
+			
+		case choice:
+			return "|";
+			break;
+			
+		case becomes:
+			return "=>";
+			break;
+			
+		case rulenumber:
+			return "rnum";
+			break;
+			
+		case startdec:
+			return "s";
+			break;
+			
+		case lambda:
+			return "lambda";
+			break;
+			
+		case end:
+			return "$";
+			break;
+			
+		default:
+			break;
+	}
+}
+/*
+ * SEARCH_PRODUCTION_TO_REDUCE
+ *
+ * return Symbol <pointer>
+ *
+ * Search the pivot in the stack the nearest < from the top
+ * search in the productions of the grammar which one
+ * have the same right side as the Pivot
+ */
+vocab_t ParserApp::searchProductionToReduce()
+{
+	int i = 0;
+	Symbol* temp;
+	std::string poppedSymbols;
+	vocab_t left_part;
+	
+	//find pivot
+	do
+	{
+		temp = semanticStack.top();
+		semanticStack.pop();
+		poppedSymbols += temp->type_value + " ";
+	}
+	while(
+		  temp->token_type != LES &&
+		  temp->token_type != LEQ &&
+		  temp->token_type != end );
+	
+	
+	if(temp->token_type == end)
+	{
+		if(DEBUG_TRACING)
+		{
+			std::cout << "Error: no production found\n";
+		}
+		throw new std::exception();
+	}
+	
+	// find matching right part
+	for(i = Start; i < end; i++)
+	{
+		std::list::iterator<std::string> it = productions[i].begin();
+		for(it; it != productions[i].end(); it++)
+		{
+			if(*it == poppedSymbols)
+			{
+				if(DEBUG_TRACING) { std::cout << "Found matching right part for " << *it << ": " << i << std::endl; }  
+				left_part = i;
+				break;
+			}
+		}
+	}
+	
+	return i;
+}
 
 /*
  * MAIN

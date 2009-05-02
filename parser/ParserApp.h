@@ -41,6 +41,7 @@ class ParserApp
 				// 20 - 36 : Vocab Symbol
 				int token_type;
 				std::string token_value;
+			    std::string type_value;
 		};
 		
 		std::ifstream input;
@@ -48,6 +49,10 @@ class ParserApp
 		PrecedenceTable* table;
 		Symbol* currentSymbol;
 		ParsingGrammar::vocab_t getSymbolTypeFromInputString(std::string str);
+		vocab_t searchProductionToReduce();
+		std::string vocabSymbolAsString(vocab_t type);
+	
+		
 };
 
 #endif
