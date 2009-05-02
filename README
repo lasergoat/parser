@@ -2,7 +2,7 @@ there is G, our input will be G' (I added lambda to the terminal Σ).
 
 1.	Consider the following grammar, G = (N, S, P, S), where 
 N = {S, L, D, X, P, R },  Σ = { n, t, nt, a, sc, |,  =>, rnum,  $, s, lambda } and 
-P = {	1: S => L $ ;
+P = {	1: S => L;
  		2: L => L D  sc;
  		3: L => D  sc;
  		4: D => n ;
@@ -27,6 +27,7 @@ To understand the semantics of the grammar, G, we introduce the following conven
 (d) The letter “a” denotes any symbol of the vocabulary.
 (e) The vertical bar “|” is used as a delimiter to separate all possible rightparts for a given leftpart of a rule.
 
+# SAMPLE INPUT (input.g)
 # Comments begin with pound sign 
 # Grammar must have name, non-terminal, terminal alphabet, start symbol
 # and a least one rule where the leftpart is the start symbol.
