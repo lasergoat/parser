@@ -10,8 +10,6 @@
 #ifndef _PARSING_GRAMMAR
 #define _PARSING_GRAMMAR
 
-#include <list>
-
 namespace ParsingGrammar
 {
 	/*
@@ -54,8 +52,6 @@ namespace ParsingGrammar
 		end,			// $ (end of input)
 		error = -1
 	};
-	
-	std::list<std::string> productions[end];
 	
 	enum symbolType
 	{

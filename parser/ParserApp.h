@@ -51,8 +51,20 @@ class ParserApp
 		ParsingGrammar::vocab_t getSymbolTypeFromInputString(std::string str);
 		vocab_t searchProductionToReduce();
 		std::string vocabSymbolAsString(vocab_t type);
-	
+		std::list<std::string> grammar_productions[end];
+		std::list<Symbol*> currentReductionList;
 		
+		void semanticAction(vocab_t reductionFactor);
+		
+		std::string poppedSymbols;
+		
+		std::set<std::string> nonterminalSet;
+		std::set<std::string> terminalSet;
+		
+		std::string grammarName;
+		std::string startSymbol;
+		
+		std::list<Symbol*> symbolTable;
 };
 
 #endif
