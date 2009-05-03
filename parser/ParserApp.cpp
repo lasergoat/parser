@@ -116,7 +116,7 @@ bool ParserApp::lexer()
 		}
 		
 		// find relation between top and current
-		Symbol *top = semanticStack.top();
+		Symbol * top = semanticStack.top();
 		parserRelation rel = (parserRelation)G->getRel(top->token_type, currentSymbol->token_type);
 		
 		// trace out the relationship we just found
@@ -150,8 +150,8 @@ bool ParserApp::lexer()
 			semanticAction(nt);
 			
 			// do a shift operation by putting the new relation and symbol onto the stack
-			Symbol* relSym = new Symbol(tempRel, "");
-			Symbol* typeSym = new Symbol(nt, G->vocabSymbolAsString(nt));
+			Symbol * relSym = new Symbol(tempRel, "");
+			Symbol * typeSym = new Symbol(nt, G->vocabSymbolAsString(nt));
 			semanticStack.push(relSym);
 			semanticStack.push(typeSym);
 		}
@@ -179,7 +179,7 @@ void ParserApp::semanticAction(vocab_t reductionFactor)
 	if(DEBUG_TRACING) std::cout << "(*) Running semantic action for: " << reductionFactor << "\n";
 	
 	for(
-		std::list<Symbol*>::iterator it = currentReductionList.begin();
+		std::list<Symbol *>::iterator it = currentReductionList.begin();
 		it != currentReductionList.end();
 		it++ )
 	{
@@ -192,7 +192,7 @@ void ParserApp::semanticAction(vocab_t reductionFactor)
 				}
 				else if(poppedSymbols == "s ")
 				{
-					G_prime->startSymbol = (*it)->token_value;
+					G_prime->startSymbol = (* it)->token_value;
 				}
 				else
 				{
@@ -233,7 +233,7 @@ void ParserApp::semanticAction(vocab_t reductionFactor)
 				{
 					if(currentDecType == NT)
 					{
-						G_prime->nonterminalSet.insert( (*it)->token_value );
+						G_prime->nonterminalSet.insert( (* it)->token_value );
 					}
 					else if(currentDecType == T)
 					{
