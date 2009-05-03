@@ -13,16 +13,6 @@
 
 
 /*
- * Symbol Class Intake Constructor
- *
- * takes in type, value
- */
-ParserApp::Symbol::Symbol(int tt, std::string tv) :
-	token_type(tt),
-	token_value(tv) {}
-
-
-/*
  * PARSER_APP CONSTRUCTOR
  *
  * return ParserApp <pointer>
@@ -35,126 +25,20 @@ ParserApp::ParserApp( const char * filename )
 {
 	// this is an extension of DataTable
 	// containing the relations for the parsing grammar G
-	table = new PrecedenceTable();
+	G = new ParsingGrammar();
+	G_prime = new InputGrammar();
 	
 	// open file with name given for reading
 	input.open(filename, std::ifstream::in);
 	
 	// Push the intial endsym ($) into stack
-	Symbol* endsym = new Symbol( ParsingGrammar::end, std::string("$") );
+	Symbol* endsym = new Symbol( end, std::string("$") );
 	semanticStack.push(endsym);        
 	
 	// start the current symbol as the initial endsym ($)
 	currentSymbol = endsym;
 	
-	if(DEBUG_TRACING) std::cout << "table->get(end, Name): " << table->get(end, name) << "\n";
-	
-	// Set up the static prodctions table
-	grammar_productions[ Start		].push_back(   "L "				); // 1
-	
-	grammar_productions[ Line		].push_back(   "L D sc "		); // 2
-	grammar_productions[ Line		].push_back(   "D sc "			); // 3
-	grammar_productions[ Deriv		].push_back(   "n "				); // 4
-	grammar_productions[ Deriv		].push_back(   "X "				); // 5
-	
-	grammar_productions[ NTList		].push_back(   "t a "			); // 6
-	grammar_productions[ NTList		].push_back(   "nt a "			); // 7
-	grammar_productions[ NTList		].push_back(   "X a "			); // 8
-	
-	grammar_productions[ Deriv		].push_back(   "s "				); // 9
-	grammar_productions[ Deriv		].push_back(   "P "				); // 10
-	
-	grammar_productions[ Production	].push_back(	"P | R "		); // 11
-	grammar_productions[ Production	].push_back(	"rnum a => R "	); // 12
-	
-	grammar_productions[ Rule		].push_back(	"R a "			); // 13
-	grammar_productions[ Rule		].push_back(	"lambda "		); // 14
-}
-
-
-/*
- * GET_SYMBOL_TYPE_FROM_INPUT_STRING
- *
- * return ParsingGrammar::vocab_t
- *
- * returns a vocab_t (ParserGrammar vocab type)
- * representing the type of the string supplied
- * via the type rules for the parsing grammar G
- */
-ParsingGrammar::vocab_t ParserApp::getSymbolTypeFromInputString(std::string str)
-{
-	// make string into character array
-	const char * symbolName = str.c_str();
-	
-	// return type, if not overwritten, wil be error
-	ParsingGrammar::vocab_t type = error;
-	
-	// State 1: A declaration
-	if(symbolName[0] == '!')
-	{
-		// copy the symbol name declaration into temp with out the '!'
-		char temp[ 50 ];//(int) str.length() - 1 ];
-		strcpy(temp, &symbolName[1]);
-
-		if( strcmp("name:", temp) == 0)
-		{
-			type = name;
-		}
-		else if( strcmp("non-terminals:", temp) == 0 )
-		{
-			type = nonterminal;
-		}
-		else if( strcmp("terminals:", temp) == 0 )
-		{
-			type = terminal;
-		}
-		else if( strcmp("start:", temp) == 0 )
-		{
-			type = startdec;
-		}
-	}
-	
-	// State 2: a number
-	else if( isdigit(symbolName[0]) )
-	{
-		if(symbolName[1] == ':')
-		{
-			type = rulenumber;
-		}
-	}
-	
-	// State 3: a symbol or lambda
-	else if( isalpha(symbolName[0]) )
-	{
-		if( strcmp("lambda", symbolName) == 0 )
-		{
-			type = lambda;
-		}
-		else
-		{
-			// Assume that any other input that
-			// is alphanumeric is a vocab symbol
-			type = vocabsymbol;
-		}
-	}
-	
-	// Other states, misc symbols
-	else if( str == "=>" )
-	{
-		type = becomes;
-	}
-	
-	else if( str == ";" )
-	{
-		type = semicolon;
-	}
-	
-	else if( str == "|" )
-	{
-		type = choice;
-	}
-	
-	return type;
+	if(DEBUG_TRACING) std::cout << "G->getRel(end, Name): " << G->getRel(end, name) << "\n";
 }
 
 
@@ -216,16 +100,16 @@ bool ParserApp::lexer()
 			currentSymbol = new Symbol( name, tempString);
 			currentSymbol->token_type = name;
 			currentSymbol->token_value = tempString;
-			currentSymbol->type_value = vocabSymbolAsString(name);
+			currentSymbol->type_value = G->vocabSymbolAsString(name);
 			
 			if(DEBUG_TRACING) std::cout << "found name declaration, ignoring: " << tempString << "\n";
 		}
 		else
 		{
 			currentSymbol = new Symbol();
-			currentSymbol->token_type = getSymbolTypeFromInputString(tempString);
+			currentSymbol->token_type = G->getSymbolTypeFromInputString(tempString);
 			currentSymbol->token_value = tempString;
-			currentSymbol->type_value = vocabSymbolAsString((vocab_t)currentSymbol->token_type);
+			currentSymbol->type_value = G->vocabSymbolAsString((vocab_t)currentSymbol->token_type);
 			
 			if(DEBUG_TRACING) std::cout << "found normal statement, type: " << currentSymbol->token_type;
 			if(DEBUG_TRACING) std::cout << " value: " << tempString << "\n";
@@ -233,11 +117,11 @@ bool ParserApp::lexer()
 		
 		// find relation between top and current
 		Symbol *top = semanticStack.top();
-		parserRelation rel = (parserRelation)table->get(top->token_type, currentSymbol->token_type);
+		parserRelation rel = (parserRelation)G->getRel(top->token_type, currentSymbol->token_type);
 		
 		// trace out the relationship we just found
 		if(DEBUG_TRACING) std::cout << "found relation between current and top (rel): " << rel << "\n";
-		if(DEBUG_TRACING) std::cout << "True Relation: " << table->get(top->token_type, currentSymbol->token_type) << std::endl;
+		if(DEBUG_TRACING) std::cout << "True Relation: " << G->getRel(top->token_type, currentSymbol->token_type) << std::endl;
 		
 		// if the relationship is Equal or Less
 		// shift operation
@@ -260,14 +144,14 @@ bool ParserApp::lexer()
 			vocab_t nt = searchProductionToReduce();
 			
 			// we've already implicitly removed the pivot
-			parserRelation tempRel = (parserRelation) table->get(semanticStack.top()->token_type, nt);
+			parserRelation tempRel = (parserRelation) G->getRel(semanticStack.top()->token_type, nt);
 			
 			// do what is called for with this symbol (a nonterminal)
 			semanticAction(nt);
 			
 			// do a shift operation by putting the new relation and symbol onto the stack
 			Symbol* relSym = new Symbol(tempRel, "");
-			Symbol* typeSym = new Symbol(nt, vocabSymbolAsString(nt));
+			Symbol* typeSym = new Symbol(nt, G->vocabSymbolAsString(nt));
 			semanticStack.push(relSym);
 			semanticStack.push(typeSym);
 		}
@@ -304,11 +188,11 @@ void ParserApp::semanticAction(vocab_t reductionFactor)
 			case Deriv:
 				if(poppedSymbols == "n ")
 				{
-					grammarName = (* it)->token_value;
+					G_prime->grammarName = (* it)->token_value;
 				}
 				else if(poppedSymbols == "s ")
 				{
-					startSymbol = (*it)->token_value;
+					G_prime->startSymbol = (*it)->token_value;
 				}
 				else
 				{
@@ -321,24 +205,24 @@ void ParserApp::semanticAction(vocab_t reductionFactor)
 					// this is a type (ParsingGrammar::symbolType)
 					currentDecType = NT;
 					it++;
-					nonterminalSet.insert( (* it)->token_value );
+					G_prime->nonterminalSet.insert( (* it)->token_value );
 				}
 				else if(poppedSymbols == "t a ")
 				{
 					currentDecType = T;
 					it++;
-					terminalSet.insert( (* it)->token_value );
+					G_prime->terminalSet.insert( (* it)->token_value );
 				}
 				else if(poppedSymbols == "X a ")
 				{
 					it++;
 					if(currentDecType == NT)
 					{
-						nonterminalSet.insert( (*it)->token_value );
+						G_prime->nonterminalSet.insert( (*it)->token_value );
 					}
 					else if(currentDecType == T)
 					{
-						terminalSet.insert( (* it)->token_value );
+						G_prime->terminalSet.insert( (* it)->token_value );
 					}
 					else
 					{
@@ -349,11 +233,11 @@ void ParserApp::semanticAction(vocab_t reductionFactor)
 				{
 					if(currentDecType == NT)
 					{
-						nonterminalSet.insert( (*it)->token_value );
+						G_prime->nonterminalSet.insert( (*it)->token_value );
 					}
 					else if(currentDecType == T)
 					{
-						terminalSet.insert( (* it)->token_value );
+						G_prime->terminalSet.insert( (* it)->token_value );
 					}
 					else
 					{
@@ -367,7 +251,7 @@ void ParserApp::semanticAction(vocab_t reductionFactor)
 				}
 				
 				// add to symbol table
-				symbolTable.push_back(*it);
+				G_prime->symbolTable.push_back(*it);
 				
 			case Production:
 				if(poppedSymbols == "P | R ")
@@ -375,7 +259,7 @@ void ParserApp::semanticAction(vocab_t reductionFactor)
 				}
 				else if(poppedSymbols == "rnum a  => R ")
 				{
-					// addProduction(currentReductionList);
+					// G_prime->addProduction(currentReductionList);
 				}
 				else
 				{
@@ -391,25 +275,25 @@ void ParserApp::semanticAction(vocab_t reductionFactor)
 					}
 					
 					for(
-						std::set<std::string>::iterator ntSetIt = nonterminalSet.begin();
-						ntSetIt != nonterminalSet.end();
+						std::set<std::string>::iterator ntSetIt = G_prime->nonterminalSet.begin();
+						ntSetIt != G_prime->nonterminalSet.end();
 						ntSetIt++ )
 					{
 						if( *ntSetIt == (* it)->token_value)
 						{
-							nonterminalSet.insert( (* it)->token_value );
+							G_prime->nonterminalSet.insert( (* it)->token_value );
 							break;
 						}
 					}
 					
 					for(
-						std::set<std::string>::iterator tSetIt = terminalSet.begin();
-						tSetIt != terminalSet.end();
+						std::set<std::string>::iterator tSetIt = G_prime->terminalSet.begin();
+						tSetIt != G_prime->terminalSet.end();
 						tSetIt++ )
 					{
 						if( *tSetIt == (* it)->token_value )
 						{
-							terminalSet.insert( (* it)->token_value );
+							G_prime->terminalSet.insert( (* it)->token_value );
 							break;
 						}
 					}
@@ -419,92 +303,6 @@ void ParserApp::semanticAction(vocab_t reductionFactor)
 				break;
 		}
 	}
-}
-
-
-/*
- * VOCAB_SYMBOL_AS_STRING
- *
- * return string with rule identifier
- * for the given vocabulary type
- */
-std::string ParserApp::vocabSymbolAsString(vocab_t type)
-{
-	std::string r;
-	switch (type)
-	{
-		case Start:
-			r = "S";
-			break;
-			
-		case Line:
-			r = "L";
-			break;
-			
-		case Deriv:
-			r = "D";
-			break;
-			
-		case NTList:
-			r = "X";
-			break;
-			
-		case Production:
-			r = "P";
-			break;
-			
-		case Rule:
-			r = "R";
-			break;
-			
-		case name:
-			r = "n";
-			break;
-			
-		case terminal:
-			r = "t";
-			break;
-			
-		case nonterminal:
-			r = "nt";
-			break;
-			
-		case vocabsymbol:
-			r = "a";
-			break;
-			
-		case semicolon:
-			r = "sc";
-			break;
-			
-		case choice:
-			r = "|";
-			break;
-			
-		case becomes:
-			r = "=>";
-			break;
-			
-		case rulenumber:
-			r = "rnum";
-			break;
-			
-		case startdec:
-			r = "s";
-			break;
-			
-		case lambda:
-			r = "lambda";
-			break;
-			
-		case end:
-			r = "$";
-			break;
-			
-		default:
-			break;
-	}
-	return r;
 }
 
 
@@ -549,8 +347,8 @@ vocab_t ParserApp::searchProductionToReduce()
 	for(i = Start; i < end; i++)
 	{
 		for(
-			std::list<std::string>::iterator it = grammar_productions[i].begin();
-			it != grammar_productions[i].end();
+			std::list<std::string>::iterator it = G->productions[i].begin();
+			it != G->productions[i].end();
 			it++ )
 		{
 			if(*it == poppedSymbols)
@@ -578,11 +376,11 @@ vocab_t ParserApp::searchProductionToReduce()
  */
 int main()
 {
-	ParserApp * App = new ParserApp("../../input.g");
+	ParserApp * engine = new ParserApp("../../input.g");
 	
 	// scan the input file
 	// perform parsing actions on the semantic stack
-	if(App->lexer())
+	if(engine->lexer())
 	{
 		// parsing was successful
 		// we can utilize the constructed data structures
