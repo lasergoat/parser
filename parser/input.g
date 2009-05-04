@@ -9,9 +9,9 @@
 !terminals: a b;
 # rules are in one of the three following forms
 # there is only one rule per line
-1: S => X|Y|Z;
+1: S => X | Y | Z;
 2: X => b;
 3: X => a;
-4: Z =>; # lambda rule
+4: Z => lambda; # lambda rule
 # The dollar sign signals the end of the grammar
 $

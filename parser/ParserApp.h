@@ -22,22 +22,21 @@ class ParserApp
 	public:
 		
 		ParserApp( const char * filename);
-		bool parse();
 		bool lexer();
+		
+		ParsingGrammar	* G;
+		InputGrammar	* G_prime;
 		
 	private:
 		
 		std::ifstream input;
 		
-		ParsingGrammar	* G;
-		InputGrammar	* G_prime;
+		std::stack<Symbol *> semanticStack;
 		
-		std::stack<Symbol*> semanticStack;
-		
-		Symbol* currentSymbol;
+		Symbol * currentSymbol;
 		vocab_t searchProductionToReduce();
 		
-		std::list<Symbol*> currentReductionList;
+		std::list<Symbol *> currentReductionList;
 		
 		void semanticAction(vocab_t reductionFactor);
 		

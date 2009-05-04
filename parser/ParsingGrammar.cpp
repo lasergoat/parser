@@ -28,25 +28,25 @@ ParsingGrammar::ParsingGrammar()
 void ParsingGrammar::constructProductions()
 {
 	// Set up the static prodctions table
-	productions[ Start		].push_back(   "L "				); // 1
+	productions[ Start		].push_back(   "L"				); // 1
 	
-	productions[ Line		].push_back(   "L D sc "		); // 2
-	productions[ Line		].push_back(   "D sc "			); // 3
-	productions[ Deriv		].push_back(   "n "				); // 4
-	productions[ Deriv		].push_back(   "X "				); // 5
+	productions[ Line		].push_back(   "L D sc"			); // 2
+	productions[ Line		].push_back(   "D sc"			); // 3
+	productions[ Deriv		].push_back(   "n"				); // 4
+	productions[ Deriv		].push_back(   "X"				); // 5
 	
-	productions[ NTList		].push_back(   "t a "			); // 6
-	productions[ NTList		].push_back(   "nt a "			); // 7
-	productions[ NTList		].push_back(   "X a "			); // 8
+	productions[ NTList		].push_back(   "t a"			); // 6
+	productions[ NTList		].push_back(   "nt a"			); // 7
+	productions[ NTList		].push_back(   "X a"			); // 8
 	
-	productions[ Deriv		].push_back(   "s "				); // 9
-	productions[ Deriv		].push_back(   "P "				); // 10
+	productions[ Deriv		].push_back(   "s"				); // 9
+	productions[ Deriv		].push_back(   "P"				); // 10
 	
-	productions[ Production	].push_back(	"P | R "		); // 11
-	productions[ Production	].push_back(	"rnum a => R "	); // 12
+	productions[ Production	].push_back(	"P | R"			); // 11
+	productions[ Production	].push_back(	"rnum a => R"	); // 12
 	
-	productions[ Rule		].push_back(	"R a "			); // 13
-	productions[ Rule		].push_back(	"lambda "		); // 14
+	productions[ Rule		].push_back(	"R a"			); // 13
+	productions[ Rule		].push_back(	"lambda"		); // 14
 }
 
 

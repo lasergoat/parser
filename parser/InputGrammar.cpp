@@ -9,10 +9,12 @@
 #include "InputGrammar.h"
 
 
-InputGrammar::InputGrammar() {}
-
-
-InputGrammar::InputGrammar( int numberOfProductions )
+InputGrammar::InputGrammar()
 {
-	precedenceMatrix = new DataTable( numberOfProductions, numberOfProductions );
+	numberOfProductions = 0;
+}
+
+void InputGrammar::IncrementProductionCount()
+{
+	numberOfProductions++;
 }

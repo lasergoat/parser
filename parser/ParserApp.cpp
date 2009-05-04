@@ -37,8 +37,6 @@ ParserApp::ParserApp( const char * filename )
 	
 	// start the current symbol as the initial endsym ($)
 	currentSymbol = endsym;
-	
-	if(DEBUG_TRACING) std::cout << "G->getRel(end, Name): " << G->getRel(end, name) << "\n";
 }
 
 
@@ -106,6 +104,16 @@ bool ParserApp::lexer()
 		}
 		else
 		{
+			// if we find a comment in the middle of a normal line,
+			// just put it back, and skip the rest of the loop (hence the continue)
+			// then the comment finder above will find it again
+			if(tempString == "#")
+			{
+				input.unget();
+				continue;
+			}
+			
+			// process this normal symbol
 			currentSymbol = new Symbol();
 			currentSymbol->token_type = G->getSymbolTypeFromInputString(tempString);
 			currentSymbol->token_value = tempString;
@@ -121,10 +129,8 @@ bool ParserApp::lexer()
 		
 		// trace out the relationship we just found
 		if(DEBUG_TRACING) std::cout << "found relation between current and top (rel): " << rel << "\n";
-		if(DEBUG_TRACING) std::cout << "True Relation: " << G->getRel(top->token_type, currentSymbol->token_type) << std::endl;
 		
-		// if the relationship is Equal or Less
-		// shift operation
+		// shift operation if the relationship is Equal or Less
 		if(rel == LEQ || rel == EQL || rel == LES)
 		{
 			if(DEBUG_TRACING) std::cout << "relation (rel) was less or equal shifting \n";
@@ -135,8 +141,7 @@ bool ParserApp::lexer()
 			semanticStack.push(currentSymbol);
 		}
 		
-		// Relation is Greater
-		// reduce operation
+		// reduce operation if Relation is Greater
 		else if(rel == GTR)
 		{
 			if(DEBUG_TRACING) std::cout << "relation (rel) was greater, reducing \n";
@@ -144,18 +149,26 @@ bool ParserApp::lexer()
 			vocab_t nt = searchProductionToReduce();
 			
 			// we've already implicitly removed the pivot
-			parserRelation tempRel = (parserRelation) G->getRel(semanticStack.top()->token_type, nt);
+			parserRelation tempRel = (parserRelation) G->getRel( semanticStack.top()->token_type, nt );
 			
 			// do what is called for with this symbol (a nonterminal)
 			semanticAction(nt);
 			
 			// do a shift operation by putting the new relation and symbol onto the stack
-			Symbol * relSym = new Symbol(tempRel, "");
-			Symbol * typeSym = new Symbol(nt, G->vocabSymbolAsString(nt));
-			semanticStack.push(relSym);
-			semanticStack.push(typeSym);
+			Symbol * relSym = new Symbol( tempRel, "");
+			Symbol * typeSym = new Symbol( nt, G->vocabSymbolAsString( nt ));
+			semanticStack.push( relSym );
+			semanticStack.push( typeSym );
 		}
 		
+		std::stack<Symbol*> tempStack(semanticStack);
+		while(!tempStack.empty())
+			
+		{
+			Symbol* temp = tempStack.top();
+			tempStack.pop();
+			std::cout << "(" << temp->token_type << ", " << temp->token_value << ") | ";
+		}std::cout << std::endl;
 	} // end while loop
 	
 	return true;
@@ -176,7 +189,7 @@ void ParserApp::semanticAction(vocab_t reductionFactor)
 {
 	symbolType currentDecType;
 	
-	if(DEBUG_TRACING) std::cout << "(*) Running semantic action for: " << reductionFactor << "\n";
+	if(DEBUG_TRACING) std::cout << "(*)> Running semantic action for: " << reductionFactor << " <(*)\n";
 	
 	for(
 		std::list<Symbol *>::iterator it = currentReductionList.begin();
@@ -186,11 +199,11 @@ void ParserApp::semanticAction(vocab_t reductionFactor)
 		switch(reductionFactor)
 		{
 			case Deriv:
-				if(poppedSymbols == "n ")
+				if(poppedSymbols == "n")
 				{
 					G_prime->grammarName = (* it)->token_value;
 				}
-				else if(poppedSymbols == "s ")
+				else if(poppedSymbols == "s")
 				{
 					G_prime->startSymbol = (* it)->token_value;
 				}
@@ -200,37 +213,22 @@ void ParserApp::semanticAction(vocab_t reductionFactor)
 				}
 				
 			case NTList:
-				if(poppedSymbols == "nt a ")
+				if(poppedSymbols == "nt a")
 				{
 					// this is a type (ParsingGrammar::symbolType)
 					currentDecType = NT;
 					it++;
 					G_prime->nonterminalSet.insert( (* it)->token_value );
 				}
-				else if(poppedSymbols == "t a ")
+				else if(poppedSymbols == "t a")
 				{
 					currentDecType = T;
 					it++;
 					G_prime->terminalSet.insert( (* it)->token_value );
 				}
-				else if(poppedSymbols == "X a ")
+				else if(poppedSymbols == "X a")
 				{
 					it++;
-					if(currentDecType == NT)
-					{
-						G_prime->nonterminalSet.insert( (*it)->token_value );
-					}
-					else if(currentDecType == T)
-					{
-						G_prime->terminalSet.insert( (* it)->token_value );
-					}
-					else
-					{
-						if(DEBUG_TRACING) std::cout << "ERROR: oiowejriojeaorijaoirj" << std::endl;
-					}
-				}
-				else if(poppedSymbols == "a ")
-				{
 					if(currentDecType == NT)
 					{
 						G_prime->nonterminalSet.insert( (* it)->token_value );
@@ -243,6 +241,21 @@ void ParserApp::semanticAction(vocab_t reductionFactor)
 					{
 						if(DEBUG_TRACING) std::cout << "ERROR: oiowejriojeaorijaoirj" << std::endl;
 					}
+				}
+				else if(poppedSymbols == "a")
+				{
+					if(currentDecType == NT)
+					{
+						G_prime->nonterminalSet.insert( (* it)->token_value );
+					}
+					else if(currentDecType == T)
+					{
+						G_prime->terminalSet.insert( (* it)->token_value );
+					}
+					else
+					{
+						if(DEBUG_TRACING) std::cout << "ERROR: bljasdhflksadhfk" << std::endl;
+					}
 					
 				}
 				else
@@ -251,13 +264,13 @@ void ParserApp::semanticAction(vocab_t reductionFactor)
 				}
 				
 				// add to symbol table
-				G_prime->symbolTable.push_back(*it);
+				G_prime->symbolTable.push_back( * it );
 				
 			case Production:
-				if(poppedSymbols == "P | R ")
+				if(poppedSymbols == "P | R")
 				{
 				}
-				else if(poppedSymbols == "rnum a  => R ")
+				else if(poppedSymbols == "rnum a  => R")
 				{
 					// G_prime->addProduction(currentReductionList);
 				}
@@ -267,9 +280,9 @@ void ParserApp::semanticAction(vocab_t reductionFactor)
 				}
 				
 			case Rule:
-				if(poppedSymbols == "R a" || poppedSymbols == "a ")
+				if(poppedSymbols == "R a" || poppedSymbols == "a")
 				{
-					if(poppedSymbols == "R a ")
+					if(poppedSymbols == "R a")
 					{
 						it++;
 					}
@@ -343,6 +356,12 @@ vocab_t ParserApp::searchProductionToReduce()
 		throw new std::exception();
 	}
 	
+	std::cout << "Popped symbols: " << poppedSymbols << std::endl;
+	if(poppedSymbols == "n ")
+	{
+		std::cout << "Symbol matches n (no space). \n";
+	}
+	
 	// find matching right part
 	for(i = Start; i < end; i++)
 	{
@@ -353,7 +372,7 @@ vocab_t ParserApp::searchProductionToReduce()
 		{
 			if(*it == poppedSymbols)
 			{
-				if(DEBUG_TRACING) std::cout << "Found matching right part for " << (* it) << ": " << i << std::endl;
+				if(DEBUG_TRACING) std::cout << "Found matching right part for " << (* it) << ": " << i << "\n";
 				left_part = (vocab_t) i;
 				break;
 			}
@@ -384,10 +403,26 @@ int main()
 	{
 		// parsing was successful
 		// we can utilize the constructed data structures
+		if(DEBUG_TRACING) std::cout << "Scanning complete, output is in results.txt \n";
+		
+		/*
+		std::ofstream resultsFile("../../results.txt");
+		if( G_prime->isWeakPrecedenceGrammar() )
+		{
+			G_prime->computePrecedenceTable();
+			std::cout	<< G_prime->renderPrecedenceTable(); 
+			resultsFile	<< G_prime->renderPrecedenceTable();
+		}
+		 else
+		 {
+			std::cout << "The input grammar is not weak precedence... \n";
+		 }
+		 */
 	}
 	else
 	{
 		// inform user of errors
+		std::cout << "The input grammar had errors. \n";
 	}
 	
 	return 0;
