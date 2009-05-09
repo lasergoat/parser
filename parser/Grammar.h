@@ -28,7 +28,8 @@ class Grammar
 		void setRel(int a, int b, int rel);
 		
 		// list of productions (non terminals)
-		std::list<std::string> productions[ MAX_PRODUCTIONS ];
+		//std::list<std::string> productions[ MAX_PRODUCTIONS ];
+		Production * productions[ MAX_PRODUCTIONS ];
 	
 	protected:
 		

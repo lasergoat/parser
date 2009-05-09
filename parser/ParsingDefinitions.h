@@ -12,27 +12,6 @@
 namespace ParsingDefinitions
 {
 	/*
-	 * SYMBOL
-	 *
-	 * holds
-	 *  - type
-	 *  - value
-	 */
-	class Symbol
-	{
-		public:
-			Symbol() {};
-			Symbol(int tt, std::string tv);
-			
-			//  0 - 19 : Relation
-			// 20 - 36 : Vocab Symbol
-			int token_type;
-			std::string token_value;
-			std::string type_value;
-	};
-
-	
-	/*
 	 * PARSER RELATIONS
 	 *
 	 */
@@ -57,7 +36,7 @@ namespace ParsingDefinitions
 		Line,			// L
 		Deriv,			// D
 		NTList,			// X
-		Production,		// P
+		Prod,			// P
 		Rule,			// R
 		name,			// n
 		terminal,		// t
@@ -80,6 +59,44 @@ namespace ParsingDefinitions
 		S				// start
 	};
 	
+	
+	/*
+	 * SYMBOL
+	 *
+	 * holds
+	 *  - type
+	 *  - value
+	 */
+	class Symbol
+	{
+		public:
+			Symbol() {};
+			Symbol(int tt, std::string tv);
+			
+			//  0 - 19 : Relation
+			// 20 - 36 : Vocab Symbol
+			int token_type;
+			std::string token_value;
+			std::string type_value;
+	};
+	
+	
+	/*
+	 * PRODUCTION
+	 *
+	 * holds
+	 *  - leftPart
+	 *  - rightPart
+	 */
+	class Production
+	{
+		public:
+			Production() {};
+			Production(vocab_t left, std::string right);
+			
+			vocab_t leftPart;
+			std::string rightPart;
+	};
 };
 
 #endif

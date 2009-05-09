@@ -28,25 +28,24 @@ ParsingGrammar::ParsingGrammar()
 void ParsingGrammar::constructProductions()
 {
 	// Set up the static prodctions table
-	productions[ Start		].push_back(   "L"				); // 1
-	
-	productions[ Line		].push_back(   "L D sc"			); // 2
-	productions[ Line		].push_back(   "D sc"			); // 3
-	productions[ Deriv		].push_back(   "n"				); // 4
-	productions[ Deriv		].push_back(   "X"				); // 5
-	
-	productions[ NTList		].push_back(   "t a"			); // 6
-	productions[ NTList		].push_back(   "nt a"			); // 7
-	productions[ NTList		].push_back(   "X a"			); // 8
-	
-	productions[ Deriv		].push_back(   "s"				); // 9
-	productions[ Deriv		].push_back(   "P"				); // 10
-	
-	productions[ Production	].push_back(	"P | R"			); // 11
-	productions[ Production	].push_back(	"rnum a => R"	); // 12
-	
-	productions[ Rule		].push_back(	"R a"			); // 13
-	productions[ Rule		].push_back(	"lambda"		); // 14
+	/*
+*/
+
+// attempting to order by length of right aprt
+	productions[0] = new Production(Prod		, "rnum a => R"	); // 12
+	productions[1] = new Production(Prod		, "P | R"		); // 11
+	productions[2] = new Production(Line		, "L D sc"		); // 2
+	productions[3] = new Production(Rule		, "R a"			); // 13
+	productions[4] = new Production(Line		, "D sc"		); // 3
+	productions[5] = new Production(NTList		, "X a"			); // 8
+	productions[6] = new Production(NTList		, "t a"			); // 6
+	productions[7] = new Production(NTList		, "nt a"		); // 7
+	productions[8] = new Production(Deriv		, "X"			); // 5
+	productions[9] = new Production(Start		, "L"			); // 1
+	productions[10] = new Production(Deriv		, "n"			); // 4
+	productions[11] = new Production(Deriv		, "s"			); // 9
+	productions[12] = new Production(Deriv		, "P"			); // 10
+	productions[13] = new Production(Rule		, "lambda"		); // 14
 }
 
 
@@ -77,7 +76,7 @@ std::string ParsingGrammar::vocabSymbolAsString(vocab_t type)
 			r = "X";
 			break;
 			
-		case Production:
+		case Prod:
 			r = "P";
 			break;
 			
@@ -237,7 +236,7 @@ void ParsingGrammar::computePrecedenceMatrix()
 	setRel(Start, Line,               0	);
 	setRel(Start, Deriv,              0	);
 	setRel(Start, NTList,             0	);
-	setRel(Start, Production,         0	);
+	setRel(Start, Prod,               0	);
 	setRel(Start, Rule,               0	);
 	setRel(Start, name,               0	);
 	setRel(Start, terminal,           0	);
@@ -251,12 +250,12 @@ void ParsingGrammar::computePrecedenceMatrix()
 	setRel(Start, lambda,             0	);
 	setRel(Start, end,                0	);
 	
-	// L Production
+	// L Prod,      
 	setRel(Line, Start,               0	);
 	setRel(Line, Line,                0	);
 	setRel(Line, Deriv,               EQL	);
 	setRel(Line, NTList,              LES	);
-	setRel(Line, Production,          LES	);
+	setRel(Line, Prod,                LES	);
 	setRel(Line, Rule,                0	);
 	setRel(Line, name,                LES	);                                 
 	setRel(Line, terminal,            LES	);                                 
@@ -270,12 +269,12 @@ void ParsingGrammar::computePrecedenceMatrix()
 	setRel(Line, lambda,              0	);
 	setRel(Line, end,                 GTR	);                                 
 	
-	// D Production
+	// D Prod,      
 	setRel(Deriv, Start,              0	);
 	setRel(Deriv, Line,               0	);
 	setRel(Deriv, Deriv,              0	);
 	setRel(Deriv, NTList,             0	);
-	setRel(Deriv, Production,         0	);
+	setRel(Deriv, Prod,               0	);
 	setRel(Deriv, Rule,               0	);
 	setRel(Deriv, name,               0	);
 	setRel(Deriv, terminal,           0	);
@@ -289,12 +288,12 @@ void ParsingGrammar::computePrecedenceMatrix()
 	setRel(Deriv, lambda,             0	);
 	setRel(Deriv, end,                0	);
 	
-	// X Production (allows a list of symbols t or nt)
+	// X Prod,       (allows a list of symbols t or nt)
 	setRel(NTList, Start,             0	);
 	setRel(NTList, Line,              0	);
 	setRel(NTList, Deriv,             0	);
 	setRel(NTList, NTList,            0	);
-	setRel(NTList, Production,        0	);
+	setRel(NTList, Prod,              0	);
 	setRel(NTList, Rule,              0	);
 	setRel(NTList, name,              0	);
 	setRel(NTList, terminal,          0	);
@@ -309,30 +308,30 @@ void ParsingGrammar::computePrecedenceMatrix()
 	setRel(NTList, end,               0	);
 	
 	// P Produciton
-	setRel(Production, Start,         0	);
-	setRel(Production, Line,          0	);
-	setRel(Production, Deriv,         0	);
-	setRel(Production, NTList,        0	);
-	setRel(Production, Production,    0	);
-	setRel(Production, Rule,          0	);
-	setRel(Production, name,          0	);
-	setRel(Production, terminal,      0	);
-	setRel(Production, nonterminal,   0	);
-	setRel(Production, vocabsymbol,   0	);
-	setRel(Production, semicolon,     GTR	);                                 
-	setRel(Production, choice,        EQL	);
-	setRel(Production, becomes,       0	);
-	setRel(Production, rulenumber,    0	);
-	setRel(Production, startdec,      0	);
-	setRel(Production, lambda,        0	);
-	setRel(Production, end,           0	);
+	setRel(Prod,       Start,         0	);
+	setRel(Prod,       Line,          0	);
+	setRel(Prod,       Deriv,         0	);
+	setRel(Prod,       NTList,        0	);
+	setRel(Prod,       Prod,          0	);
+	setRel(Prod,       Rule,          0	);
+	setRel(Prod,       name,          0	);
+	setRel(Prod,       terminal,      0	);
+	setRel(Prod,       nonterminal,   0	);
+	setRel(Prod,       vocabsymbol,   0	);
+	setRel(Prod,       semicolon,     GTR	);                                 
+	setRel(Prod,       choice,        EQL	);
+	setRel(Prod,       becomes,       0	);
+	setRel(Prod,       rulenumber,    0	);
+	setRel(Prod,       startdec,      0	);
+	setRel(Prod,       lambda,        0	);
+	setRel(Prod,       end,           0	);
 	
-	// R Production
+	// R Prod,      
 	setRel(Rule, Start,               0	);
 	setRel(Rule, Line,                0	);
 	setRel(Rule, Deriv,               0	);
 	setRel(Rule, NTList,              0	);
-	setRel(Rule, Production,          0	);
+	setRel(Rule, Prod,                0	);
 	setRel(Rule, Rule,                0	);
 	setRel(Rule, name,                0	);
 	setRel(Rule, terminal,            0	);
@@ -351,7 +350,7 @@ void ParsingGrammar::computePrecedenceMatrix()
 	setRel(name, Line,                0	);
 	setRel(name, Deriv,               0	);
 	setRel(name, NTList,              0	);
-	setRel(name, Production,          0	);
+	setRel(name, Prod,                0	);
 	setRel(name, Rule,                0	);
 	setRel(name, name,                0	);
 	setRel(name, terminal,            0	);
@@ -370,7 +369,7 @@ void ParsingGrammar::computePrecedenceMatrix()
 	setRel(terminal, Line,            0	);
 	setRel(terminal, Deriv,           0	);
 	setRel(terminal, NTList,          0	);
-	setRel(terminal, Production,      0	);
+	setRel(terminal, Prod,            0	);
 	setRel(terminal, Rule,            0	);
 	setRel(terminal, name,            0	);
 	setRel(terminal, terminal,        0	);
@@ -389,7 +388,7 @@ void ParsingGrammar::computePrecedenceMatrix()
 	setRel(nonterminal, Line,         0	);
 	setRel(nonterminal, Deriv,        0	);
 	setRel(nonterminal, NTList,       0	);
-	setRel(nonterminal, Production,   0	);
+	setRel(nonterminal, Prod,         0	);
 	setRel(nonterminal, Rule,         0	);
 	setRel(nonterminal, name,         0	);
 	setRel(nonterminal, terminal,     0	);
@@ -408,7 +407,7 @@ void ParsingGrammar::computePrecedenceMatrix()
 	setRel(vocabsymbol, Line,         0	);
 	setRel(vocabsymbol, Deriv,        0	);
 	setRel(vocabsymbol, NTList,       0	);
-	setRel(vocabsymbol, Production,   0	);
+	setRel(vocabsymbol, Prod,         0	);
 	setRel(vocabsymbol, Rule,         0	);
 	setRel(vocabsymbol, name,         0	);
 	setRel(vocabsymbol, terminal,     0	);
@@ -426,7 +425,7 @@ void ParsingGrammar::computePrecedenceMatrix()
 	setRel(semicolon, Line,           0	);
 	setRel(semicolon, Deriv,          0	);
 	setRel(semicolon, NTList,         0	);
-	setRel(semicolon, Production,     0	);
+	setRel(semicolon, Prod,           0	);
 	setRel(semicolon, Rule,           0	);
 	setRel(semicolon, name,           GTR	);                                 
 	setRel(semicolon, terminal,       GTR	);                                 
@@ -445,7 +444,7 @@ void ParsingGrammar::computePrecedenceMatrix()
 	setRel(choice, Line,              0	);
 	setRel(choice, Deriv,             0	);
 	setRel(choice, NTList,            0	);
-	setRel(choice, Production,        0	);
+	setRel(choice, Prod,              0	);
 	setRel(choice, Rule,              LEQ	);                                 
 	setRel(choice, name,              0	);
 	setRel(choice, terminal,          0	);
@@ -463,7 +462,7 @@ void ParsingGrammar::computePrecedenceMatrix()
 	setRel(becomes, Line,             0	);
 	setRel(becomes, Deriv,            0	);
 	setRel(becomes, NTList,           0	);
-	setRel(becomes, Production,       0	);
+	setRel(becomes, Prod,             0	);
 	setRel(becomes, Rule,             LEQ	);                                 
 	setRel(becomes, name,             0	);
 	setRel(becomes, terminal,         0	);
@@ -481,7 +480,7 @@ void ParsingGrammar::computePrecedenceMatrix()
 	setRel(rulenumber, Line,          0	);
 	setRel(rulenumber, Deriv,         0	);
 	setRel(rulenumber, NTList,        0	);
-	setRel(rulenumber, Production,    0	);
+	setRel(rulenumber, Prod,          0	);
 	setRel(rulenumber, Rule,          0	);
 	setRel(rulenumber, name,          0	);
 	setRel(rulenumber, terminal,      0	);
@@ -501,7 +500,7 @@ void ParsingGrammar::computePrecedenceMatrix()
 	setRel(startdec, Line,            0	);
 	setRel(startdec, Deriv,           0	);
 	setRel(startdec, NTList,          0	);
-	setRel(startdec, Production,      0	);
+	setRel(startdec, Prod,            0	);
 	setRel(startdec, Rule,            0	);
 	setRel(startdec, name,            0	);
 	setRel(startdec, terminal,        0	);
@@ -519,7 +518,7 @@ void ParsingGrammar::computePrecedenceMatrix()
 	setRel(lambda, Line,              0	);
 	setRel(lambda, Deriv,             0	);
 	setRel(lambda, NTList,            0	);
-	setRel(lambda, Production,        0	);
+	setRel(lambda, Prod,              0	);
 	setRel(lambda, Rule,              0	);
 	setRel(lambda, name,              0	);
 	setRel(lambda, terminal,          0	);
@@ -537,7 +536,7 @@ void ParsingGrammar::computePrecedenceMatrix()
 	setRel(end, Line,                 LES	);                                 
 	setRel(end, Deriv,                LES	);                                 
 	setRel(end, NTList,               LES	);                                 
-	setRel(end, Production,           LES	);                                 
+	setRel(end, Prod,                 LES	);                                 
 	setRel(end, Rule,                 0	);
 	setRel(end, name,                 LES	);                                 
 	setRel(end, terminal,             LES	);                                 

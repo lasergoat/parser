@@ -137,7 +137,7 @@ bool ParserApp::lexer()
 			
 			// simply add the stuff to the stack
 			Symbol* relation = new Symbol(rel, "");
-			semanticStack.push(relation);
+			//semanticStack.push(relation);
 			semanticStack.push(currentSymbol);
 		}
 		
@@ -146,7 +146,33 @@ bool ParserApp::lexer()
 		{
 			if(DEBUG_TRACING) std::cout << "relation (rel) was greater, reducing \n";
 			
-			vocab_t nt = searchProductionToReduce();
+			std::string matchingString("");
+			std::stack<Symbol*> tempStk(semanticStack);
+			Symbol* tempSymbol;
+			std::list<Symbol*> symbolList;
+			
+			do{
+				tempSymbol = tempStk.top();
+				tempStk.pop();
+				matchingString += tempSybmol->type_value;
+				
+				for(int i = 0; i < 14; i++)
+				{
+					if(productions[i]->rightPart == matchingString)
+					{
+						Symbol* newSym = new Symbol((vocab_t)productions[i]->leftPart, "");
+						tempStk.push(newSym);
+						semanticAction(i, symbolList);
+						semanticStack = tempStk;
+						break;
+					}
+					else
+					{
+						symbolList.push_front(tempSymbol);
+					}
+				}
+			   }while((int)tempSymbol->token_type >= 20);
+			//vocab_t nt = searchProductionToReduce();
 			
 			// we've already implicitly removed the pivot
 			parserRelation tempRel = (parserRelation) G->getRel( semanticStack.top()->token_type, nt );
@@ -161,6 +187,10 @@ bool ParserApp::lexer()
 			semanticStack.push( typeSym );
 		}
 		
+		else
+		{
+			return false;
+		}
 		std::stack<Symbol*> tempStack(semanticStack);
 		while(!tempStack.empty())
 			
@@ -266,7 +296,7 @@ void ParserApp::semanticAction(vocab_t reductionFactor)
 				// add to symbol table
 				G_prime->symbolTable.push_back( * it );
 				
-			case Production:
+			case Prod:
 				if(poppedSymbols == "P | R")
 				{
 				}

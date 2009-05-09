@@ -45,3 +45,41 @@ To understand the semantics of the grammar, G, we introduce the following conven
 4: Z =>; # lambda rule
 # The dollar sign signals the end of the grammar
 $
+
+
+ALGORITHM (Bottom-up Parsing for WP Grammars)
+Input:  
+G = (N, S, P, S) a Weak-precedence grammar.  Let T be the table of precedence relations for [VG ∪{$}] × [Σ ∪{$}], where T[X,Y] ⊆   ; T[X,Y] = φ if and only if the symbols X,Y are not related by any WW relation. Let P be the table of productions ordered in descending order by length of right-part;  P[i].right-part will denote the right-part of production #(i), while P[i].left-part will denote the left-part.  Let Stk denote the parse stack initialized to the special marker ($); Stk[Top] will denote the top symbol of Stk;  Stk should be thought of as a string with the rightmost symbol corresponding to Stk[Top].  Finally, let Action be a table of function pointers.  The function identified by Action[k] is designed to perform some semantic processing action associated with rule k of the grammar, G; e.g., generate object code or enter a declaration in a Symbol table, etc. 
+
+Procedure:
+
+//  C will be set to "$" on an end-of-file.
+(1)  Set C = Next_Source_Token.
+
+(2)  If C = $ and Stk = "$S" Then Accept and Halt.
+
+(3)  Set X = Stk[Top].
+
+(4)  Case T[X,C]
+	 {
+		When  φ	==> Report Syntax Error and Halt.
+		// Shift input
+		When  	==> Push(C, Stk); Goto (1)
+		When   	==>  for k in 1..#P
+		{
+			if  (for some θ) Stk = θP[k].rightpart  then
+			{
+			 	// Reduce Stack
+				Set Stk = θP[k].leftpart;
+				Action[k];
+				Goto (3)
+			}
+		}
+		Report Syntax Error and Halt.
+			// Note:  this is the mathematical specification for finding the 
+			// the first rule in the Production table (P) such that the rightpart
+			//  matches the top of the stack (remember how P is organized).
+			//  When such a rule is found, pop the rightpart from the stack and
+			//  push the leftpart on the stack.  If no rule in P matches the stack,
+			//   halt and report a “Syntax Error”.
+	}//end case
